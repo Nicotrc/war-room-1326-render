@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+  <title>AI War Room — Multi-Agent Quant Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-pulse"></div>
+      <h1>AI WAR ROOM</h1>
+      <span class="badge badge-live">LIVE</span>
+    </div>
+    <div class="topbar-center">
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-view="warroom">War Room</button>
+        <button class="nav-tab" data-view="scouting">Scouting</button>
+        <button class="nav-tab" data-view="crypto">Crypto</button>
+        <button class="nav-tab" data-view="forex">Forex</button>
+        <button class="nav-tab" data-view="chat">Live Chat</button>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <div class="health-bar">
+        <div class="health-dot ok" id="health-gpt" title="GPT-4o"></div>
+        <div class="health-dot ok" id="health-claude" title="Claude 3.5"></div>
+        <div class="health-dot ok" id="health-gemini" title="Gemini 1.5"></div>
+      </div>
+      <span class="clock" id="clock"></span>
+    </div>
+  </header>
+
+  <!-- ═══ WAR ROOM VIEW ═══ -->
+  <div class="view-panel" id="view-warroom">
+    <main class="layout">
+      <aside class="panel panel-stock">
+        <div class="panel-header"><span class="panel-icon">📊</span><h2>TARGET</h2></div>
+        <div class="stock-search">
+          <input type="text" id="tickerInput" placeholder="Ticker (es. AAPL)" maxlength="5" />
+          <button id="analyzeBtn">ANALIZZA</button>
+        </div>
+        <div class="stock-card" id="stockCard" style="display:none">
+          <div class="stock-ticker" id="stockTicker"></div>
+          <div class="stock-name" id="stockName"></div>
+          <div class="stock-price-row">
+            <span class="stock-price" id="stockPrice"></span>
+            <span class="stock-change" id="stockChange"></span>
+          </div>
+          <div class="stock-meta" id="stockMeta"></div>
+          <canvas id="miniChart" width="300" height="80"></canvas>
+        </div>
+        <div class="panel-header" style="margin-top:1rem"><span class="panel-icon">🤖</span><h2>AGENTI LLM</h2></div>
+        <div class="agents-list">
+          <div class="agent-card"><div class="agent-avatar" style="background:#3b82f622;color:#3b82f6">🧠</div><div class="agent-info"><div class="agent-name" style="color:#3b82f6">ALPHA</div><div class="agent-role">Macro Strategist (GPT-4o)</div></div></div>
+          <div class="agent-card"><div class="agent-avatar" style="background:#f59e0b22;color:#f59e0b">🛡️</div><div class="agent-info"><div class="agent-name" style="color:#f59e0b">SENTINEL</div><div class="agent-role">Risk Manager (Claude 3.5)</div></div></div>
+          <div class="agent-card"><div class="agent-avatar" style="background:#a78bfa22;color:#a78bfa">📐</div><div class="agent-info"><div class="agent-name" style="color:#a78bfa">PRISM</div><div class="agent-role">Pattern Analyst (Gemini 1.5)</div></div></div>
+        </div>
+        <div class="verdict-box" id="verdictBox" style="display:none">
+          <div class="verdict-label">VERDETTO FINALE</div>
+          <div class="verdict-action" id="verdictAction"></div>
+          <div class="verdict-conf" id="verdictConf"></div>
+          <div id="scoreSection"></div>
+          <button id="executeBtn" style="display:none">ESEGUI TRANSAZIONE</button>
+        </div>
+      </aside>
+
+      <section class="panel panel-chat">
+        <div class="panel-header"><span class="panel-icon">💬</span><h2>DISCUSSIONE</h2><span class="msg-count" id="msgCount">0 messaggi</span></div>
+        <div class="chat-feed" id="chatFeed">
+          <div class="chat-empty">Inserisci un ticker e premi <strong>ANALIZZA</strong> per avviare la War Room AI.</div>
+        </div>
+      </section>
+
+      <aside class="panel panel-metrics">
+        <div class="panel-header"><span class="panel-icon">📈</span><h2>METRICHE</h2></div>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">Consenso</div><div class="metric-value" id="metricConsensus">—</div></div>
+          <div class="metric-card"><div class="metric-label">Rischio</div><div class="metric-value" id="metricRisk">—</div></div>
+          <div class="metric-card"><div class="metric-label">Confidenza</div><div class="metric-value" id="metricConfidence">—</div></div>
+          <div class="metric-card"><div class="metric-label">Sentimento</div><div class="metric-value" id="metricSentiment">—</div></div>
+        </div>
+        <div class="panel-header" style="margin-top:1rem"><span class="panel-icon">📋</span><h2>LOG DECISIONI</h2></div>
+        <div class="decision-log" id="decisionLog"><div class="log-empty">In attesa di analisi.</div></div>
+        <div class="transaction-result" id="transactionResult" style="display:none">
+          <div class="tx-header">TRANSAZIONE ESEGUITA</div>
+          <div class="tx-details" id="txDetails"></div>
+        </div>
+        <div class="panel-header" style="margin-top:1rem"><span class="panel-icon">📜</span><h2>STORICO</h2></div>
+        <div class="decision-history" id="decisionHistory"></div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- ═══ SCOUTING VIEW ═══ -->
+  <div class="view-panel" id="view-scouting" style="display:none">
+    <main class="layout-single">
+      <div class="view-header">
+        <h2>Short-Term Scouting Bot</h2>
+        <p>Screening settimanale: Biotech, AI, Defense, Energy, Tech alta volatilita</p>
+        <button id="scoutBtn" class="primary-btn">AVVIA SCREENING</button>
+      </div>
+      <div class="scout-results" id="scoutResults">
+        <div class="chat-empty">Premi <strong>AVVIA SCREENING</strong> per scansionare i mercati.</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ═══ CRYPTO VIEW ═══ -->
+  <div class="view-panel" id="view-crypto" style="display:none">
+    <main class="layout">
+      <aside class="panel panel-stock">
+        <div class="panel-header"><span class="panel-icon">🪙</span><h2>CRYPTO</h2></div>
+        <div class="stock-search">
+          <input type="text" id="cryptoInput" placeholder="Simbolo (es. BTC)" maxlength="10" />
+          <button id="cryptoAnalyzeBtn">ANALIZZA</button>
+        </div>
+        <div class="stock-card" id="cryptoCard" style="display:none"></div>
+      </aside>
+      <section class="panel panel-chat">
+        <div class="panel-header"><span class="panel-icon">💬</span><h2>ANALISI CRYPTO</h2></div>
+        <div class="chat-feed" id="cryptoFeed"><div class="chat-empty">Inserisci un simbolo crypto per l'analisi.</div></div>
+      </section>
+      <aside class="panel panel-metrics">
+        <div class="panel-header"><span class="panel-icon">📊</span><h2>METRICHE CRYPTO</h2></div>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">Funding Rate</div><div class="metric-value">—</div></div>
+          <div class="metric-card"><div class="metric-label">Open Interest</div><div class="metric-value">—</div></div>
+          <div class="metric-card"><div class="metric-label">Liquidazioni</div><div class="metric-value">—</div></div>
+          <div class="metric-card"><div class="metric-label">On-Chain</div><div class="metric-value">—</div></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- ═══ FOREX VIEW ═══ -->
+  <div class="view-panel" id="view-forex" style="display:none">
+    <main class="layout">
+      <aside class="panel panel-stock">
+        <div class="panel-header"><span class="panel-icon">💱</span><h2>FOREX</h2></div>
+        <div class="stock-search">
+          <input type="text" id="forexInput" placeholder="Pair (es. EURUSD)" maxlength="10" />
+          <button id="forexAnalyzeBtn">ANALIZZA</button>
+        </div>
+        <div class="stock-card" id="forexCard" style="display:none"></div>
+      </aside>
+      <section class="panel panel-chat">
+        <div class="panel-header"><span class="panel-icon">💬</span><h2>ANALISI FOREX</h2></div>
+        <div class="chat-feed" id="forexFeed"><div class="chat-empty">Inserisci un pair forex per l'analisi.</div></div>
+      </section>
+      <aside class="panel panel-metrics">
+        <div class="panel-header"><span class="panel-icon">📊</span><h2>MACRO FX</h2></div>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">DXY</div><div class="metric-value">—</div></div>
+          <div class="metric-card"><div class="metric-label">Z-Score</div><div class="metric-value">—</div></div>
+          <div class="metric-card"><div class="metric-label">Carry</div><div class="metric-value">—</div></div>
+          <div class="metric-card"><div class="metric-label">Volatilita</div><div class="metric-value">—</div></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- ═══ LIVE CHAT VIEW ═══ -->
+  <div class="view-panel" id="view-chat" style="display:none">
+    <main class="layout-chat">
+      <div class="chat-upload-panel">
+        <div class="panel-header"><span class="panel-icon">📸</span><h2>CARICA GRAFICO</h2></div>
+        <div class="drop-zone" id="chartDropZone">
+          <div class="drop-icon">📊</div>
+          <div class="drop-text">Trascina uno screenshot del grafico qui<br>oppure clicca per selezionare</div>
+          <input type="file" id="chartFileInput" accept="image/*" hidden />
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatTextInput" placeholder="Fai una domanda sul grafico..." />
+          <button id="chatSendBtn">INVIA</button>
+        </div>
+        <div class="panel-header" style="margin-top:.75rem"><span class="panel-icon">📌</span><h2>GRAFICI FISSATI</h2></div>
+        <div class="pinned-charts" id="pinnedCharts"></div>
+      </div>
+      <div class="chat-analysis-panel">
+        <div class="panel-header"><span class="panel-icon">🔮</span><h2>ANALISI PREDITTIVA</h2></div>
+        <div class="chat-feed" id="chatFeed2">
+          <div class="chat-empty">Carica uno screenshot di un grafico per l'analisi AI.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- FOOTER SIGNATURE -->
+  <footer class="signature">
+    Built by <strong>nicotrc</strong>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
